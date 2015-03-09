@@ -2,7 +2,18 @@ var mailer = require('nodemailer');
 var config = require('../config');
 var util = require('util');
 
-var transport = mailer.createTransport('SMTP', config.mail_opts);
+var smtpTransport = require('nodemailer-smtp-transport');
+
+
+var transport = mailer.createTransport(smtpTransport({
+    host: 'smtp.uuzcloud.com',
+    port: 25,
+    auth: {
+        user: 'support@uuzcloud.com',
+        pass: 'Yernyou2013'
+    }
+}));
+// var transport = mailer.createTransport('SMTP', config.mail_opts);
 var SITE_ROOT_URL = 'http://' + config.host;
 
 /**
@@ -14,10 +25,11 @@ var sendMail = function (data) {
     return;
   }
   // 遍历邮件数组，发送每一封邮件，如果有发送失败的，就再压入数组，同时触发mailEvent事件
-  transport.sendMail(data, function (err) {
+  transport.sendMail(data, function (err, info) {
+      console.log(err, info);
+
     if (err) {
       // 写为日志
-      console.log(err);
     }
   });
 };
@@ -39,6 +51,9 @@ exports.sendActiveMail = function (who, token, name) {
     '<p>若您没有在' + config.name + '社区填写过注册信息，说明有人滥用了您的电子邮箱，请删除此邮件，我们对给您造成的打扰感到抱歉。</p>' +
     '<p>' + config.name + '社区 谨上。</p>';
 
+
+  console.log(who);
+    
   exports.sendMail({
     from: from,
     to: to,
